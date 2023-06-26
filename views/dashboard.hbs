@@ -1,0 +1,133 @@
+<html>
+
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" type="text/css" href="/stylesheets/dashboard.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11" />
+  <script src="https://kit.fontawesome.com/yourcode.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.9/dist/sweetalert2.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.9/dist/sweetalert2.min.js"></script>
+
+
+</head>
+
+<body>
+  <div class="navbar">
+    <a class="active"><i class="fa-solid fa-a fa-spin fa-xl" style="padding:11px"></i></a>
+    <a class="active" href="/">Home</a>
+    <a href="/">Login</a>
+    <a href="/register">Register</a>
+    <a href="/">Logout</a>
+
+    <div class="search-container">
+      <form action="/dashboard" method="get">
+        <input type="text" placeholder="Search.." name="search" value="{{searchTerm}}" />
+        <button type="submit"><i class="fa fa-search"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>User Management Dashboard</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Mobile</th>
+          <th>Password</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each users}}
+        <tr>
+          <td>{{name}}</td>
+          <td>{{email}}</td>
+          <td>{{mobile}}</td>
+          <td>********</td>
+          <td>
+            <div class="container" style="display: flex;">
+              <a href="/update?id={{id}}"><button class="update"><i
+                    class="fa-regular fa-pen-to-square"></i></button></a>
+              <form method="POST" action="/delete" class="delete-form">
+                <input type="hidden" name="id" value="{{id}}" />
+                <button type="button" class="delete"><i class="fa-solid fa-trash"></i></button>
+              </form>
+              <a href="/adduser" class="add">
+                <button class="add">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </a>
+              <a href="/view?id={{id}}" class="add">
+                <button class="view">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </a>
+            </div>
+
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    <a href="/adduser">
+      <button class="add">Add User</button>
+    </a>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const deleteButtons = document.querySelectorAll('.delete');
+      deleteButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const form = button.closest('.delete-form');
+          const userId = form.querySelector('input[name="id"]').value;
+
+          Swal.fire({
+            title: 'Are you sure?',
+            text: 'You are about to delete this user. This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              fetch('/delete', {
+                method: 'POST',
+                body: new URLSearchParams({
+                  id: userId
+                })
+              })
+                .then(response => {
+                  if (response.ok) {
+                    Swal.fire({
+                      title: 'Deleted!',
+                      text: 'User has been deleted.',
+                      icon: 'success'
+                    }).then(() => {
+                      window.location.href = '/dashboard';
+                    });
+                  } else {
+                    throw new Error('User deletion failed.');
+                  }
+                })
+                .catch(error => {
+                  console.error('Error deleting user:', error);
+                  Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while deleting the user.',
+                    icon: 'error'
+                  });
+                });
+            }
+          });
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>

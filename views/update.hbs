@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form</title>
+  <link rel="stylesheet" href="stylesheets/add.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.9/dist/sweetalert2.min.css" />
+</head>
+
+<body>
+  <form id="updateUserForm" method="POST" action="/update">
+    <h2>Update User Form</h2>
+    <div class="form-group fullname">
+      <label for="fullname">Name</label>
+      <input type="text" id="fullname" name="name" placeholder="Enter your name" value="{{user.name}}">
+    </div>
+    <div class="form-group email">
+      <label for="email">Email Address</label>
+      <input type="text" id="email" name="email" placeholder="Enter your email address" value="{{user.email}}">
+    </div>
+    <div class="form-group date">
+      <label for="date">Mobile</label>
+      <input type="number" id="date" name="mobile" placeholder="Enter Your Mobile no." value="{{user.mobile}}">
+    </div>
+    <div class="form-group password">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter your password" value="{{user.password}}">
+    </div>
+    <div class="form-group submit-btn">
+      <input type="hidden" name="id" value="{{user.id}}">
+      <input type="submit" value="Submit">
+    </div>
+  </form>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.9/dist/sweetalert2.min.js"></script>
+  <script>
+    const updateUserForm = document.getElementById('updateUserForm');
+    const passwordInput = document.getElementById('password');
+    const passToggleBtn = document.getElementById('pass-toggle-btn');
+
+    const showError = (field, errorText) => {
+      field.classList.add('error');
+      const errorElement = document.createElement('small');
+      errorElement.classList.add('error-text');
+      errorElement.innerText = errorText;
+      field.closest('.form-group').appendChild(errorElement);
+    };
+
+    const showSuccessAlert = () => {
+      Swal.fire({
+        title: 'User Updated',
+        text: 'User Updated successfully!',
+        icon: 'success',
+      }).then(() => {
+        window.location.href = '/dashboard';
+      });
+    };
+
+    const handleFormSubmit = async (e) => {
+      e.preventDefault();
+
+      const fullnameInput = document.getElementById('fullname');
+      const emailInput = document.getElementById('email');
+      const mobileInput = document.getElementById('date');
+
+      const fullname = fullnameInput.value.trim();
+      const email = emailInput.value.trim();
+      const mobile = mobileInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+
+      document.querySelectorAll('.form-group .error').forEach((field) => field.classList.remove('error'));
+      document.querySelectorAll('.error-text').forEach((errorText) => errorText.remove());
+
+      if (fullname === '') {
+        showError(fullnameInput, 'Enter your full name');
+      }
+      if (!emailPattern.test(email)) {
+        showError(emailInput, 'Enter a valid email address');
+      }
+      if (mobile === '') {
+        showError(mobileInput, 'Enter your mobile number');
+      }
+      if (password === '') {
+        showError(passwordInput, 'Enter your password');
+      }
+
+      const errorInputs = document.querySelectorAll('.form-group .error');
+      if (errorInputs.length > 0) return;
+
+      try {
+        const response = await fetch(updateUserForm.action, {
+          method: 'POST',
+          body: new FormData(updateUserForm)
+        });
+
+        if (response.ok) {
+          showSuccessAlert();
+        } else {
+          throw new Error('An error occurred while updating the user.');
+        }
+      } catch (error) {
+        console.error('Error updating user:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred while updating the user.',
+          confirmButtonText: 'OK'
+        });
+      }
+    };
+
+    passToggleBtn.addEventListener('click', () => {
+      passToggleBtn.className = passwordInput.type === 'password' ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+      passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+    });
+
+    updateUserForm.addEventListener('submit', handleFormSubmit);
+  </script>
+</body>
+
+</html>
